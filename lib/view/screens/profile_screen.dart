@@ -1,4 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo/core/app_routes.dart';
+import 'package:todo/data/model/user_model.dart';
+import 'package:todo/view/widgets/text_field_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,12 +15,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final fullname = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF5F7FB),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
             SizedBox(height: 100),
@@ -29,26 +36,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 20),
             Text(
               "Create Your Profile",
-              style: TextStyle(fontSize: 20, fontWeight: .bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
             Text(
               "Add your name and profile picture",
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: .w400,
+                fontWeight: FontWeight.w400,
                 color: Color(0xff8F8F90),
               ),
             ),
             SizedBox(height: 40),
-
             SizedBox(height: 5),
             Textfieldwidget(
               label: "Full Name",
+              text: "Enter your name",
               controller: fullname,
               validator: (value) {
-                if (value == null) {
-                  return "Enter your name";
+                if (value == null || value.isEmpty) {
+                  return "Enter Your Name";
                 }
                 return null;
               },
@@ -56,17 +63,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 15),
             MaterialButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.circular(20),
+                borderRadius: BorderRadius.circular(20),
               ),
               minWidth: 300,
               padding: EdgeInsets.all(10),
-              onPressed: () {},
+              onPressed: () async {
+                _showLoading();
+
+                var userBox = Hive.box<UserModel>('User');
+
+                await userBox
+                    .put("userkey", UserModel(fullName: fullname.text))
+                    .then((value) {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushNamed(AppRoutes.home);
+                    })
+                    .catchError((error) {
+                      log(error);
+                      ScaffoldMessenger.of(error).showSnackBar(
+                        SnackBar(content: Text("Something went wrong")),
+                      );
+                    });
+                // var getFullName = userBox.get("UserKey");
+                // log(getFullName?.fullName ?? "Null");
+              },
               color: Color(0xff3F51B5),
               child: Text(
                 "Create",
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: .bold,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
@@ -76,60 +102,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-}
 
-class Textfieldwidget extends StatelessWidget {
-  const Textfieldwidget({
-    super.key,
-    this.controller,
-    this.validator,
-    required this.label,
-  });
-  final TextEditingController? controller;
-  final String? Function(String?)? validator;
-  final String label;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: .w200,
-              color: Colors.black,
-            ),
+  Future<void> _showLoading() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Row(
+            spacing: 20,
+            children: [
+              CircularProgressIndicator(),
+              Text(
+                "Loading ...",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight(400)),
+              ),
+            ],
           ),
-          SizedBox(height: 5),
-          TextFormField(
-            controller: controller,
-            validator: validator,
-            decoration: InputDecoration(
-              hint: Text(
-                "Enter your name",
-                style: TextStyle(color: Colors.grey),
-              ),
-              fillColor: Colors.white,
-              filled: true,
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide(color: Colors.transparent),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide(color: Colors.red),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
