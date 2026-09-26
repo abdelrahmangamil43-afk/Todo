@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo/core/app_dialog.dart';
+import 'package:todo/data/model/task_model.dart';
 import 'package:todo/view/widgets/choose_color_widget.dart';
 import 'package:todo/view/widgets/text_field_widget.dart';
 import 'package:todo/view/widgets/custom_button.dart';
@@ -24,8 +27,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     super.dispose();
   }
 
-  var titleTask = TextEditingController();
-  var desTask = TextEditingController();
   int colorSelected = 0;
   @override
   Widget build(BuildContext context) {
@@ -134,7 +135,33 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
             SizedBox(height: 24),
-            CustomMaterialButton(onPressed: () {}, text: "Save"),
+            CustomMaterialButton(
+              onPressed: () async {
+                AppDialog.showLoading(context);
+                var taskBox = Hive.box<TaskModel>("Tasks");
+                await taskBox
+                    .add(
+                      TaskModel(
+                        description: descriptionController.text,
+                        title: titleController.text,
+                        hexColor: colorSelected,
+                        status: dropdownButtonValue == "Pending"
+                            ? StatusTask.pending
+                            : StatusTask.done,
+                      ),
+                    )
+                    .then((value) {
+                      Navigator.of(context).pop();
+                      titleController.clear();
+                      descriptionController.clear();
+                      colorSelected = 0;
+                    })
+                    .catchError((error) {
+                      Navigator.of(context).pop();
+                    });
+              },
+              text: "Save",
+            ),
           ],
         ),
       ),
