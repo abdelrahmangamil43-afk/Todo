@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CustomMaterialButton extends StatelessWidget {
-  const new({super.key, required this.onPressed, required this.text});
+  const CustomMaterialButton({
+    super.key,
+    required this.onPressed,
+    required this.text,
+  });
 
   final void Function()? onPressed;
   final String text;
