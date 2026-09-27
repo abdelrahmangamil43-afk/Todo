@@ -2,8 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:todo/core/app_dialog.dart';
 import 'package:todo/core/app_routes.dart';
 import 'package:todo/data/model/user_model.dart';
+import 'package:todo/view/widgets/custom_button.dart';
 import 'package:todo/view/widgets/text_field_widget.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -61,14 +63,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             SizedBox(height: 15),
-            MaterialButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              minWidth: 300,
-              padding: EdgeInsets.all(10),
+            CustomMaterialButton(
+              text: "Create",
+
               onPressed: () async {
-                _showLoading();
+                AppDialog.showLoading(context);
 
                 var userBox = Hive.box<UserModel>('User');
 
@@ -87,40 +86,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // var getFullName = userBox.get("UserKey");
                 // log(getFullName?.fullName ?? "Null");
               },
-              color: Color(0xff3F51B5),
-              child: Text(
-                "Create",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Future<void> _showLoading() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Row(
-            spacing: 20,
-            children: [
-              CircularProgressIndicator(),
-              Text(
-                "Loading ...",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight(400)),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

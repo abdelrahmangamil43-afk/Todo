@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class Textfieldwidget extends StatelessWidget {
   const Textfieldwidget({
     super.key,
+    this.maxLines = 1,
     this.controller,
     this.validator,
     required this.label,
@@ -13,7 +14,7 @@ class Textfieldwidget extends StatelessWidget {
   final String? Function(String?)? validator;
   final String label;
   final String text;
-
+  final int? maxLines;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -33,6 +34,7 @@ class Textfieldwidget extends StatelessWidget {
           const SizedBox(height: 5),
 
           TextFormField(
+            maxLines: maxLines,
             controller: controller,
             validator: validator,
             decoration: InputDecoration(
