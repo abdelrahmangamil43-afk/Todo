@@ -27,12 +27,18 @@ class ToDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.home,
+      initialRoute: getName() == null ? AppRoutes.profile : AppRoutes.home,
       routes: {
         AppRoutes.profile: (context) => ProfileScreen(),
         AppRoutes.home: (context) => HomeScreen(),
         AppRoutes.addtask: (context) => AddTaskScreen(),
       },
     );
+  }
+
+  String? getName() {
+    var taskBox = Hive.box<UserModel>("User");
+    var user = taskBox.get("userkey");
+    return user?.fullName;
   }
 }
