@@ -49,120 +49,121 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Textfieldwidget(
-              controller: titleController,
-              label: 'Task Title',
-              text: 'Design Login Screen',
-            ),
-            SizedBox(height: 16),
-            Textfieldwidget(
-              controller: descriptionController,
-              label: 'Description',
-              text: 'Task Description...',
-              maxLines: 4,
-            ),
-            SizedBox(height: 16),
-            Text(
-              "Status",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w200,
-                color: Colors.black,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Textfieldwidget(
+                controller: titleController,
+                label: 'Task Title',
+                text: 'Design Login Screen',
               ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 48,
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+              SizedBox(height: 16),
+              Textfieldwidget(
+                controller: descriptionController,
+                label: 'Description',
+                text: 'Task Description...',
+                maxLines: 4,
               ),
-              child: DropdownButton<String>(
-                isExpanded: true,
-                value: dropdownButtonValue,
-                underline: SizedBox(),
-                items: [
-                  DropdownMenuItem(
-                    value: "Pending",
-                    child: Text(
-                      "Pending",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
+              SizedBox(height: 16),
+              Text(
+                "Status",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w200,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 8),
+              Container(
+                height: 48,
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: dropdownButtonValue,
+                  underline: SizedBox(),
+                  items: [
+                    DropdownMenuItem(
+                      value: "Pending",
+                      child: Text(
+                        "Pending",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
-                  ),
-                  DropdownMenuItem(
-                    value: "Done",
-                    child: Text(
-                      "Done",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
+                    DropdownMenuItem(
+                      value: "Done",
+                      child: Text(
+                        "Done",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      dropdownButtonValue = value;
-                    });
-                  }
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        dropdownButtonValue = value;
+                      });
+                    }
+                  },
+                ),
+              ),
+              SizedBox(height: 18),
+              Text(
+                "Choose color",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w200,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 10),
+              ChooseColorWidget(
+                clickColor: (color) {
+                  colorSelected = color;
+                  setState(() {});
                 },
               ),
-            ),
-            SizedBox(height: 18),
-            Text(
-              "Choose color",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w200,
-                color: Colors.black,
+              SizedBox(height: 24),
+              CustomMaterialButton(
+                onPressed: () async {
+                  AppDialog.showLoading(context);
+                  var taskBox = Hive.box<TaskModel>("Tasks");
+                  await taskBox
+                      .add(
+                        TaskModel(
+                          description: descriptionController.text,
+                          title: titleController.text,
+                          hexColor: colorSelected,
+                          status: dropdownButtonValue == "Pending"
+                              ? StatusTask.pending
+                              : StatusTask.done,
+                        ),
+                      )
+                      .then((value) {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      })
+                      .catchError((error) {
+                        AppDialog.showErorr(context, error);
+                      });
+                },
+                text: "Save",
               ),
-            ),
-            SizedBox(height: 10),
-            ChooseColorWidget(
-              clickColor: (color) {
-                colorSelected = color;
-              },
-            ),
-            SizedBox(height: 24),
-            CustomMaterialButton(
-              onPressed: () async {
-                AppDialog.showLoading(context);
-                var taskBox = Hive.box<TaskModel>("Tasks");
-                await taskBox
-                    .add(
-                      TaskModel(
-                        description: descriptionController.text,
-                        title: titleController.text,
-                        hexColor: colorSelected,
-                        status: dropdownButtonValue == "Pending"
-                            ? StatusTask.pending
-                            : StatusTask.done,
-                      ),
-                    )
-                    .then((value) {
-                      Navigator.of(context).pop();
-                      titleController.clear();
-                      descriptionController.clear();
-                      colorSelected = 0;
-                    })
-                    .catchError((error) {
-                      Navigator.of(context).pop();
-                    });
-              },
-              text: "Save",
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

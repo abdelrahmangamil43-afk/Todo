@@ -3,320 +3,101 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:todo/core/app_routes.dart';
 import 'package:todo/data/model/task_model.dart';
 import 'package:todo/data/model/user_model.dart';
+import 'package:todo/view/widgets/header_widget.dart';
+import 'package:todo/view/widgets/task_info_details.dart';
+import 'package:todo/view/widgets/task_item.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<TaskModel> tasks = [];
+  int numOfTasks = 0;
+  int numOfPending = 0;
+  int numOfDone = 0;
+  @override
+  void initState() {
+    super.initState();
+    getAllTasks();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xffF5F6FA),
+      backgroundColor: Color(0xffF5F7FB),
 
-      body: ValueListenableBuilder(
-        valueListenable: Hive.box<UserModel>('User').listenable(),
-        builder: (context, Box<UserModel> userBox, _) {
-          var user = userBox.get('userkey');
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24),
 
-          return ValueListenableBuilder(
-            valueListenable: Hive.box<TaskModel>('Tasks').listenable(),
-            builder: (context, Box<TaskModel> taskBox, _) {
-              var tasks = taskBox.values.toList();
-
-              var doneTasks = tasks
-                  .where((task) => task.status == StatusTask.done)
-                  .length;
-
-              var pendingTasks = tasks
-                  .where((task) => task.status == StatusTask.pending)
-                  .length;
-
-              return SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 25),
-
-                      Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Color(0xff3F51B5),
-                            ),
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 25,
-                            ),
-                          ),
-
-                          SizedBox(width: 12),
-
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Good Morning 👋",
-                                style: TextStyle(
-                                  color: Color(0xff999999),
-                                  fontSize: 12,
-                                ),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                user?.fullName ?? "",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          Spacer(),
-
-                          Icon(
-                            Icons.notifications_none,
-                            color: Colors.black,
-                            size: 25,
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 20),
-
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color(0xff3F51B5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                Text(
-                                  "${tasks.length}",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Tasks",
-                                  style: TextStyle(
-                                    color: Color(0xffC8CEEA),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            Column(
-                              children: [
-                                Text(
-                                  "$doneTasks",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Done",
-                                  style: TextStyle(
-                                    color: Color(0xffC8CEEA),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            Column(
-                              children: [
-                                Text(
-                                  "$pendingTasks",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Pending",
-                                  style: TextStyle(
-                                    color: Color(0xffC8CEEA),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 22),
-
-                      Text(
-                        "Today's Tasks",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Expanded(
-                        child: tasks.isEmpty
-                            ? Center(
-                                child: Text(
-                                  "No Tasks Yet",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              )
-                            : ListView.builder(
-                                itemCount: tasks.length,
-                                itemBuilder: (context, index) {
-                                  var task = tasks[index];
-
-                                  return Container(
-                                    margin: EdgeInsets.only(bottom: 12),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 15,
-                                      horizontal: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.04),
-                                          blurRadius: 8,
-                                          offset: Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 10,
-                                          height: 52,
-                                          decoration: BoxDecoration(
-                                            color: Color(task.hexColor),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                        ),
-
-                                        SizedBox(width: 14),
-
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                task.title,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-
-                                              SizedBox(height: 5),
-
-                                              Text(
-                                                task.description,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-
-                                              SizedBox(height: 7),
-
-                                              Container(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                  vertical: 5,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      task.status ==
-                                                          StatusTask.done
-                                                      ? Color(0xffE4F5E7)
-                                                      : Color(0xffE1F0FF),
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                child: Text(
-                                                  task.status == StatusTask.done
-                                                      ? "Done"
-                                                      : "Pending",
-                                                  style: TextStyle(
-                                                    color:
-                                                        task.status ==
-                                                            StatusTask.done
-                                                        ? Colors.green
-                                                        : Colors.blue,
-                                                    fontSize: 11,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-
-                                        Icon(
-                                          Icons.chevron_right,
-                                          color: Colors.black54,
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-                    ],
-                  ),
+        child: Column(
+          spacing: 20,
+          children: [
+            SizedBox(height: 60),
+            HeaderWidget(fullName: getName()),
+            TaskInfoDetails(
+              numOfTasks: numOfTasks,
+              numOfPending: numOfPending,
+              numOfDone: numOfDone,
+            ),
+            Expanded(
+              child: ListView.separated(
+                itemBuilder: (context, index) => TaskItem(
+                  task: tasks[index],
+                  delete: () {
+                    deleteItem(index);
+                  },
                 ),
-              );
-            },
-          );
-        },
+                itemCount: tasks.length,
+                separatorBuilder: (context, index) => SizedBox(height: 10),
+              ),
+            ),
+          ],
+        ),
       ),
-
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Color(0xffDDE3FF),
         foregroundColor: Color(0xff3F51B5),
-        onPressed: () {
-          Navigator.pushNamed(context, AppRoutes.addtask);
+        onPressed: () async {
+          await Navigator.pushNamed(context, AppRoutes.addtask);
+          getAllTasks();
         },
+
         icon: Icon(Icons.add),
         label: Text("Task"),
       ),
     );
+  }
+
+  void getAllTasks() {
+    var taskBox = Hive.box<TaskModel>("Tasks");
+    tasks = taskBox.values.toList();
+    numbers();
+    setState(() {});
+  }
+
+  String getName() {
+    var taskBox = Hive.box<UserModel>("User");
+    var user = taskBox.get("userkey");
+    return user?.fullName ?? "Error From Name";
+  }
+
+  void numbers() {
+    numOfTasks = tasks.length;
+    numOfDone = tasks.where((e) => e.status == StatusTask.done).toList().length;
+    numOfPending = tasks
+        .where((e) => e.status == StatusTask.done)
+        .toList()
+        .length;
+  }
+
+  void deleteItem(int index) {
+    var taskBox = Hive.box<TaskModel>("Tasks");
+    taskBox.deleteAt(index);
+    tasks.removeAt(index);
+    setState(() {});
   }
 }
